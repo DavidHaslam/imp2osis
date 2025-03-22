@@ -1,0 +1,432 @@
+﻿{
+  "formatName": "TextPipe_FLL",
+  "formatVersion": "1.0",
+  "trialInput": "You can type sample text in \r\nthe Trial Run Input Area to\r\ntest if your filter is working \r\nproperly. Click the [Trial Run]\r\nbutton below to start the test.\r\n\r\nYou can also perform Partial Trial \r\nRuns by right-clicking on filters\r\nin the Filter list.\r\n\r\nTo clear this text, just right \r\nclick it and select 'Clear Entire \r\nField' from the menu. Most \r\nof TextPipe's fields have \r\nsimilar helpful menus.\r\n",
+  "Logging": {
+    "expanded": true,
+    "enabled": true,
+    "filename": ".\\textpipe.log",
+    "append": false,
+    "threshold": 500,
+    "commentFilters": true
+  },
+  "Files": [
+    {
+      "filename": "M:\\merged.try.xml",
+      "subfolder": "None",
+      "action": "Include"
+    }
+  ],
+  "Filters": {
+    "Input": {
+      "binaryFiles": 0,
+      "inputFromFiles": 1,
+      "insideCompressed": false
+    },
+    "Comment": {
+      "expanded": true,
+      "value": "Convert IMP to OSIS\r\n\r\nAssumes: subst M: <input_path>\r\n\r\nAssumes: no $$$bookname \\d+:0 in IMP file\r\n\r\ni.e. Does not cope with book & chapter titles, etc.\r\n\r\nAssumes: no IMP headers, etc.",
+      "SubFilters": {
+        "Comment": {
+          "value": "Add simple tags\r\n\r\nTBD:\r\n Replace provisional tags by special non-text UTF-8 codepoints",
+          "SubFilters": {
+            "Comment": {
+              "value": "Tag each testament",
+              "SubFilters": {
+                "Search": {
+                  "expanded": true,
+                  "search": "^\\Q$$$\\E(Genesis|Matthew) 1:1\r\n",
+                  "replace": "",
+                  "ignoreCase": false,
+                  "patternType": 1,
+                  "replaceType": 2,
+                  "greedy": false,
+                  "dotMatchesNewLines": false,
+                  "utf8support": true,
+                  "SubFilters": {
+                    "String": {
+                      "value": "@\r\n",
+                      "matchCase": false,
+                      "filterType": 1
+                    }
+                  }
+                }
+              }
+            },
+            "Comment": {
+              "value": "Tag each book",
+              "SubFilters": {
+                "Grep": {
+                  "expanded": true,
+                  "filterType": 0,
+                  "value": "\\Q$$$\\E(.+) 1:1$",
+                  "ignoreCase": false,
+                  "patternType": 0,
+                  "utf8support": true,
+                  "ignoreEmpty": false,
+                  "SubFilters": {
+                    "String": {
+                      "value": "~\r\n",
+                      "matchCase": false,
+                      "filterType": 1
+                    }
+                  }
+                }
+              }
+            },
+            "Comment": {
+              "value": "Tag each chapter",
+              "SubFilters": {
+                "Grep": {
+                  "expanded": true,
+                  "filterType": 0,
+                  "value": "\\Q$$$\\E(.+) \\d+:1$",
+                  "ignoreCase": false,
+                  "patternType": 0,
+                  "utf8support": true,
+                  "ignoreEmpty": false,
+                  "SubFilters": {
+                    "String": {
+                      "value": "#\r\n",
+                      "matchCase": false,
+                      "filterType": 1
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "Comment": {
+          "value": "Replace each EOL by tab",
+          "SubFilters": {
+            "SearchList": {
+              "useFile": false,
+              "simultaneous": false,
+              "onlyLogOnReplace": true,
+              "ignoreCase": false,
+              "patternType": 1,
+              "greedy": false,
+              "dotMatchesNewLines": false,
+              "utf8support": true,
+              "items": [
+                ["\\r\\n", "\\t"]
+              ]
+            }
+          }
+        },
+        "Comment": {
+          "value": "Split at simple tags",
+          "SubFilters": {
+            "Comment": {
+              "value": "Split into separate testaments\r\n\r\n",
+              "SubFilters": {
+                "SearchList": {
+                  "useFile": false,
+                  "simultaneous": false,
+                  "ignoreCase": false,
+                  "patternType": 1,
+                  "greedy": false,
+                  "dotMatchesNewLines": true,
+                  "utf8support": true,
+                  "items": [
+                    ["\\@\\t", "\\r\\n"]
+                  ]
+                },
+                "Simple": {
+                  "filterType": 10
+                },
+                "Simple": {
+                  "expanded": true,
+                  "filterType": 49,
+                  "SubFilters": {
+                    "String": {
+                      "value": "<div type=\"x-testament\">\r\n",
+                      "matchCase": false,
+                      "filterType": 1
+                    },
+                    "String": {
+                      "value": "<\/div>\r\n",
+                      "matchCase": false,
+                      "filterType": 2
+                    }
+                  }
+                }
+              }
+            },
+            "Comment": {
+              "value": "Split into separate books",
+              "SubFilters": {
+                "SearchList": {
+                  "useFile": false,
+                  "simultaneous": false,
+                  "ignoreCase": false,
+                  "patternType": 1,
+                  "greedy": false,
+                  "dotMatchesNewLines": false,
+                  "utf8support": true,
+                  "items": [
+                    ["~\\t", "\\r\\n"]
+                  ]
+                },
+                "Simple": {
+                  "filterType": 10
+                },
+                "Simple": {
+                  "expanded": true,
+                  "filterType": 49,
+                  "SubFilters": {
+                    "Grep": {
+                      "expanded": true,
+                      "filterType": 1,
+                      "value": "^<",
+                      "ignoreCase": false,
+                      "patternType": 0,
+                      "utf8support": true,
+                      "ignoreEmpty": false,
+                      "SubFilters": {
+                        "String": {
+                          "value": "<div type=\"book\">\r\n",
+                          "matchCase": false,
+                          "filterType": 1
+                        },
+                        "String": {
+                          "value": "<\/div>\r\n",
+                          "matchCase": false,
+                          "filterType": 2
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "Comment": {
+              "value": "Split into separate chapters",
+              "SubFilters": {
+                "SearchList": {
+                  "useFile": false,
+                  "simultaneous": false,
+                  "ignoreCase": false,
+                  "patternType": 1,
+                  "greedy": false,
+                  "dotMatchesNewLines": false,
+                  "utf8support": true,
+                  "items": [
+                    ["#\\t", "\\r\\n"]
+                  ]
+                },
+                "Simple": {
+                  "filterType": 10
+                },
+                "Simple": {
+                  "expanded": true,
+                  "filterType": 49,
+                  "SubFilters": {
+                    "Grep": {
+                      "expanded": true,
+                      "filterType": 1,
+                      "value": "^<",
+                      "ignoreCase": false,
+                      "patternType": 0,
+                      "utf8support": true,
+                      "ignoreEmpty": false,
+                      "SubFilters": {
+                        "String": {
+                          "value": "<chapter>\r\n",
+                          "matchCase": false,
+                          "filterType": 1
+                        },
+                        "String": {
+                          "value": "<\/chapter>\r\n",
+                          "matchCase": false,
+                          "filterType": 2
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "Comment": {
+              "value": "Split into separate verses",
+              "SubFilters": {
+                "SearchList": {
+                  "useFile": false,
+                  "simultaneous": false,
+                  "onlyLogOnReplace": true,
+                  "ignoreCase": false,
+                  "patternType": 1,
+                  "greedy": false,
+                  "dotMatchesNewLines": false,
+                  "utf8support": true,
+                  "items": [
+                    ["\\r\\n(\\Q$$$\\E)", "\\t$1"],
+                    ["\\t(\\Q$$$\\E)", "\\r\\n$1"]
+                  ]
+                },
+                "Simple": {
+                  "filterType": 10
+                },
+                "Simple": {
+                  "expanded": true,
+                  "filterType": 49,
+                  "SubFilters": {
+                    "Grep": {
+                      "expanded": true,
+                      "filterType": 1,
+                      "value": "^<",
+                      "ignoreCase": false,
+                      "patternType": 0,
+                      "utf8support": true,
+                      "ignoreEmpty": false,
+                      "SubFilters": {
+                        "String": {
+                          "value": "<verse>\r\n",
+                          "matchCase": false,
+                          "filterType": 1
+                        },
+                        "String": {
+                          "value": "<\/verse>\r\n",
+                          "matchCase": false,
+                          "filterType": 2
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "Comment": {
+          "value": "Insert osisID attributes\r\n\r\n",
+          "SubFilters": {
+            "Comment": {
+              "value": "For verses",
+              "SubFilters": {
+                "Search": {
+                  "search": "<verse>\r\n\\Q$$$\\E(.+) (\\d+):(\\d+)\\t",
+                  "replace": "<verse osisID=\"[$1].$2.$3\">\r\n",
+                  "ignoreCase": false,
+                  "patternType": 1,
+                  "greedy": false,
+                  "dotMatchesNewLines": false,
+                  "utf8support": true
+                }
+              }
+            },
+            "Comment": {
+              "value": "For chapters",
+              "SubFilters": {
+                "Search": {
+                  "search": "<chapter>\r\n(<verse )(osisID=\"\\D+\\.\\d+)(\\.\\d+\">)\r\n",
+                  "replace": "<chapter $2\">\r\n$1$$2$$3\r\n",
+                  "ignoreCase": false,
+                  "patternType": 1,
+                  "greedy": false,
+                  "dotMatchesNewLines": false,
+                  "utf8support": true
+                }
+              }
+            },
+            "Comment": {
+              "value": "Replace [bookname] by abbr\r\n\r\nAssumes: no digits within IMP bookname\r\n\r\nTBD: Use replace list from file",
+              "SubFilters": {
+                "Search": {
+                  "expanded": true,
+                  "search": "osisID=\"(.+)\"",
+                  "replace": "",
+                  "ignoreCase": false,
+                  "patternType": 1,
+                  "replaceType": 4,
+                  "greedy": false,
+                  "dotMatchesNewLines": false,
+                  "utf8support": true,
+                  "SubFilters": {
+                    "Search": {
+                      "expanded": true,
+                      "search": "\\[(.+)\\]",
+                      "replace": "",
+                      "ignoreCase": false,
+                      "patternType": 1,
+                      "replaceType": 4,
+                      "greedy": false,
+                      "dotMatchesNewLines": false,
+                      "utf8support": true,
+                      "SubFilters": {
+                        "SearchList": {
+                          "useFile": false,
+                          "simultaneous": false,
+                          "ignoreCase": false,
+                          "patternType": 0,
+                          "greedy": false,
+                          "dotMatchesNewLines": true,
+                          "utf8support": true,
+                          "items": [
+                            ["Genesis", "Gen"]
+                          ]
+                        }
+                      }
+                    },
+                    "SearchList": {
+                      "useFile": false,
+                      "simultaneous": false,
+                      "onlyLogOnReplace": true,
+                      "ignoreCase": false,
+                      "patternType": 0,
+                      "greedy": false,
+                      "dotMatchesNewLines": true,
+                      "utf8support": true,
+                      "items": [
+                        ["[", ""],
+                        ["]", ""]
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "Comment": {
+          "value": "Replace each tab by EOL",
+          "SubFilters": {
+            "SearchList": {
+              "useFile": false,
+              "simultaneous": false,
+              "onlyLogOnReplace": true,
+              "ignoreCase": false,
+              "patternType": 1,
+              "greedy": false,
+              "dotMatchesNewLines": false,
+              "utf8support": true,
+              "items": [
+                ["\\t", "\\r\\n"]
+              ]
+            },
+            "Simple": {
+              "filterType": 10
+            }
+          }
+        },
+        "Comment": {
+          "value": "Add OSIS header and footer"
+        }
+      }
+    },
+    "Output": {
+      "retainDateTime": false,
+      "outputToFile": 1,
+      "changeExtension": true,
+      "newExtension": ".osis",
+      "changeBaseDir": false,
+      "newBaseDir": "C:\\",
+      "singleFilename": "%USERPROFILE%\\mergefilename.txt",
+      "append": false,
+      "onlyOutputChangedFiles": 1,
+      "ignoreStartFolder": false,
+      "isPrimary": true
+    }
+  }
+}
